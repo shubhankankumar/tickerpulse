@@ -1,0 +1,10 @@
+name = "tickerpulse"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[[kv_namespaces]]
+binding = "SNAP"
+id = "c742459b82ad419fbc11fc48c8890b34" # from: npx wrangler kv namespace create SNAP

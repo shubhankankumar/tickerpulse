@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TickerPulse · Most-mentioned stocks on Reddit</title>
+<meta name="description" content="The stocks Reddit is talking about right now: mentions, 24-hour change and momentum across investing subreddits, refreshed every 5 minutes.">
+<meta property="og:title" content="TickerPulse · Most-mentioned stocks on Reddit">
+<meta property="og:description" content="Mentions, 24-hour change and momentum for every stock discussed on Reddit, refreshed every 5 minutes.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 9h3l2-6 4 10 2-4h3' fill='none' stroke='%2310b981' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#fff;--fg:#0f172a;--mute:#64748b;--line:#e2e8f0;--head:#f8fafc;--hover:#f1f5f9;--acc:#047857;--up:#047857;--down:#b91c1c;--new:#a16207}
+@media (prefers-color-scheme:dark){:root{--bg:#0b0f14;--fg:#e5e7eb;--mute:#8b949e;--line:#1f2933;--head:#10161d;--hover:#131b24;--acc:#34d399;--up:#34d399;--down:#f87171;--new:#fbbf24}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 48px}
+header{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+h1{margin:0;font-size:26px;letter-spacing:-.02em}
+h1 span{color:var(--acc)}
+.sub{margin:4px 0 0;color:var(--mute);font-size:14px}
+#meta{white-space:nowrap}
+input{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;width:260px;max-width:100%}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.stale{margin:0 0 12px;padding:8px 12px;border:1px solid var(--new);border-radius:8px;color:var(--new);font-size:14px}
+.wrap{border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:9px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:0}
+th{position:sticky;top:0;z-index:1;background:var(--head);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+th:first-child{border-top-left-radius:10px}th:last-child{border-top-right-radius:10px}
+th button{all:unset;cursor:pointer}
+th button:hover,th[aria-sort$=ending] button{color:var(--fg)}
+th[aria-sort=ascending] button::after{content:" ▲"}
+th[aria-sort=descending] button::after{content:" ▼"}
+th button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.l{text-align:left}
+tbody tr:hover{background:var(--hover)}
+.tk a{color:var(--acc);font:600 14px ui-monospace,SFMono-Regular,Consolas,monospace;text-decoration:none}
+.tk a:hover{text-decoration:underline}
+.nm{max-width:300px;overflow:hidden;text-overflow:ellipsis}
+.mv{display:inline-block;min-width:3.2em;margin-left:6px;font-size:12px;text-align:left}
+.up{color:var(--up)}.down{color:var(--down)}.new{color:var(--new);font-weight:600}.mute{color:var(--mute)}.b{font-weight:600}
+#empty{padding:24px;text-align:center;color:var(--mute)}
+footer{margin-top:28px;color:var(--mute);font-size:13px;line-height:1.6}
+footer dt{color:var(--fg);font-weight:600;margin-top:8px}
+footer dd{margin:0}
+footer a{color:inherit}
+@media (max-width:680px){
+  main{padding-top:20px}
+  .wrap{overflow-x:auto}
+  th,td{padding:8px 6px}
+  th{font-size:11px;letter-spacing:0}
+  td{font-size:14px}
+  .mv{min-width:0;margin-left:4px}
+  .lg{display:none}
+  .opt{display:none}
+  input{width:100%}
+  header>label{flex:1 1 100%}
+}
+@media (max-width:380px){.pc{display:none}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div>
+    <h1>Ticker<span>Pulse</span></h1>
+    <p class="sub">Most-mentioned stocks on Reddit, last 24 hours<span id="meta"></span></p>
+  </div>
+  <label><span class="sr">Search stocks</span><input id="q" type="search" placeholder="Search ticker or company   /" autocomplete="off" spellcheck="false"></label>
+</header>
+<p id="stale" class="stale" role="status" hidden></p>
+<div class="wrap">
+<table>
+<thead><tr>
+  <th class="l" data-k="rank" aria-sort="none"><button>Rank</button></th>
+  <th class="l" data-k="ticker" aria-sort="none"><button>Ticker</button></th>
+  <th class="l opt">Company</th>
+  <th data-k="mentions" aria-sort="none"><button>Mentions</button></th>
+  <th data-k="delta" aria-sort="none"><button title="Change in mentions vs. the previous 24 hours">24h<span class="lg"> change</span></button></th>
+  <th class="opt" data-k="upvotes" aria-sort="none"><button>Upvotes</button></th>
+  <th data-k="z" aria-sort="none"><button title="How unusual the 24h change is, given how much the stock is discussed">Momentum</button></th>
+</tr></thead>
+<tbody id="rows"></tbody>
+</table>
+<p id="empty" hidden>No stocks match your search.</p>
+</div>
+<noscript><p>TickerPulse needs JavaScript to show the table.</p></noscript>
+<footer>
+  <dl>
+    <dt>Mentions</dt><dd>Posts and comments naming the stock across investing subreddits in the last 24 hours.</dd>
+    <dt>24h change</dt><dd>Mentions now minus mentions in the previous 24 hours. The percentage is shown only when the earlier count was 10 or more; below that it is noise. “—” means the earlier count isn't available.</dd>
+    <dt>Momentum</dt><dd>(now − before) ÷ √(now + before): the change measured against its normal randomness. Around ±1 is ordinary; +2 or more is a real spike.</dd>
+    <dt>Rank</dt><dd>▲/▼ shows movement since 24 hours ago. NEW means the stock wasn't ranked then.</dd>
+  </dl>
+  <p>Data from <a href="https://apewisdom.io" rel="noopener">ApeWisdom</a>, refreshed every 5 minutes. Not financial advice.</p>
+</footer>
+</main>
+<script id="data" type="application/json">__DATA__</script>
+<script>
+"use strict";
+// Row tuple layout, see src/data.js
+const C = { rank: 0, ticker: 1, name: 2, mentions: 3, upvotes: 4, prevRank: 5, prevMentions: 6, delta: 7, pct: 8, z: 9 };
+const FIRST_DIR = { rank: 1, ticker: 1, mentions: -1, delta: -1, upvotes: -1, z: -1 };
+const STALE_MS = 20 * 60e3;
+const $ = (id) => document.getElementById(id);
+const nf = new Intl.NumberFormat("en-US");
+const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "") + nf.format(Math.abs(n));
+
+let snap, trOf;
+const params = new URLSearchParams(location.search);
+let q = params.get("q") || "";
+// hasOwn, not `in`: ?sort=toString / __proto__ would otherwise match inherited keys.
+let sort = Object.hasOwn(FIRST_DIR, params.get("sort")) ? params.get("sort") : "rank";
+let dir = params.get("dir") === "asc" ? 1 : params.get("dir") === "desc" ? -1 : FIRST_DIR[sort];
+let checked = Date.now();
+
+function cell(tr, text, cls) {
+  const td = tr.insertCell();
+  td.textContent = text;
+  if (cls) td.className = cls;
+  return td;
+}
+
+function buildRow(r) {
+  const tr = document.createElement("tr");
+  const rank = cell(tr, r[C.rank], "l");
+  const mv = document.createElement("span");
+  if (r[C.prevRank] === null) mv.textContent = "NEW", mv.className = "mv new";
+  else {
+    const d = r[C.prevRank] - r[C.rank];
+    mv.textContent = d ? (d > 0 ? "▲" : "▼") + nf.format(Math.abs(d)) : "";
+    mv.className = "mv " + (d > 0 ? "up" : "down");
+  }
+  rank.append(mv);
+
+  const a = document.createElement("a");
+  a.href = "https://apewisdom.io/stocks/" + encodeURIComponent(r[C.ticker]) + "/";
+  a.rel = "noopener";
+  a.textContent = r[C.ticker];
+  cell(tr, "", "l tk").append(a);
+  cell(tr, r[C.name], "l nm opt").title = r[C.name];
+  cell(tr, nf.format(r[C.mentions]));
+
+  const delta = r[C.delta], pct = r[C.pct], z = r[C.z];
+  if (delta === null) cell(tr, "—", "mute");
+  else {
+    const td = cell(tr, signed(delta), delta > 0 ? "up" : delta < 0 ? "down" : "mute");
+    if (pct !== null) {
+      const s = document.createElement("span");
+      s.className = "pc";
+      s.textContent = " (" + signed(pct) + "%)";
+      td.append(s);
+    }
+  }
+  cell(tr, nf.format(r[C.upvotes]), "opt");
+  if (z === null) cell(tr, "—", "mute");
+  else cell(tr, (z > 0 ? "+" : z < 0 ? "−" : "") + Math.abs(z).toFixed(1), z >= 2 ? "up b" : z <= -2 ? "down b" : "mute");
+  return tr;
+}
+
+function setSnap(s) {
+  snap = s;
+  trOf = new Map(s.rows.map((r) => [r, buildRow(r)]));
+}
+
+// Nulls ("unknown") always sort last; ties fall back to rank.
+function cmp(a, b) {
+  const i = C[sort], x = a[i], y = b[i];
+  if (x === y) return a[C.rank] - b[C.rank];
+  if (x === null) return 1;
+  if (y === null) return -1;
+  return (typeof x === "string" ? x.localeCompare(y) : x - y) * dir;
+}
+
+function ago(t) {
+  const m = Math.floor((Date.now() - t) / 60e3);
+  return m < 1 ? "just now" : m < 60 ? m + " min ago" : Math.floor(m / 60) + " h ago";
+}
+
+function meta() {
+  $("meta").textContent = " · " + nf.format(snap.rows.length) + " stocks · updated " + ago(snap.t);
+  const stale = Date.now() - snap.t > STALE_MS;
+  $("stale").hidden = !stale;
+  if (stale) $("stale").textContent = "Data hasn't refreshed since " + new Date(snap.t).toLocaleString() + ". Numbers may be out of date.";
+}
+
+function render() {
+  const needle = q.trim().toUpperCase().replace(/^\$/, "");
+  const rows = (needle
+    ? snap.rows.filter((r) => r[C.ticker].startsWith(needle) || (" " + r[C.name].toUpperCase()).includes(" " + needle))
+    : snap.rows.slice()).sort(cmp);
+  $("rows").replaceChildren(...rows.map((r) => trOf.get(r)));
+  $("empty").hidden = rows.length > 0;
+  for (const th of document.querySelectorAll("th[data-k]"))
+    th.setAttribute("aria-sort", th.dataset.k === sort ? (dir > 0 ? "ascending" : "descending") : "none");
+  meta();
+}
+
+function syncUrl() {
+  const p = new URLSearchParams();
+  if (q) p.set("q", q);
+  if (sort !== "rank" || dir !== 1) p.set("sort", sort), p.set("dir", dir > 0 ? "asc" : "desc");
+  history.replaceState(null, "", p.size ? "?" + p : location.pathname);
+}
+
+async function poll() {
+  checked = Date.now();
+  try {
+    // no-cache = revalidate with the stored ETag, so an unchanged snapshot costs a 304.
+    const res = await fetch("/data.json", { cache: "no-cache" });
+    if (!res.ok) return;
+    const s = await res.json();
+    if (s.t !== snap.t) setSnap(s), render();
+  } catch {}
+}
+
+setSnap(JSON.parse($("data").textContent));
+$("q").value = q;
+render();
+
+$("q").addEventListener("input", (e) => { q = e.target.value; syncUrl(); render(); });
+document.querySelector("thead").addEventListener("click", (e) => {
+  const th = e.target.closest("th[data-k]");
+  if (!th) return;
+  const k = th.dataset.k;
+  dir = k === sort ? -dir : FIRST_DIR[k];
+  sort = k;
+  syncUrl();
+  render();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && document.activeElement !== $("q")) e.preventDefault(), $("q").focus();
+});
+setInterval(() => {
+  meta();
+  if (!document.hidden && Date.now() - checked >= 120e3) poll();
+}, 30e3);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && Date.now() - checked >= 60e3) poll();
+});
+</script>
+</body>
+</html>
