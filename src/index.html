@@ -43,10 +43,15 @@ tbody tr:hover{background:var(--hover)}
 .mv{display:inline-block;min-width:3.2em;margin-left:6px;font-size:12px;text-align:left}
 .up{color:var(--up)}.down{color:var(--down)}.new{color:var(--new);font-weight:600}.mute{color:var(--mute)}.b{font-weight:600}
 #empty{padding:24px;text-align:center;color:var(--mute)}
-footer{margin-top:28px;color:var(--mute);font-size:13px;line-height:1.6}
-footer dt{color:var(--fg);font-weight:600;margin-top:8px}
+.amb{margin-left:3px;color:var(--new);font-size:12px;cursor:help}
+footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);color:var(--mute);font-size:13px;line-height:1.55}
+footer dl{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 32px;margin:0}
+footer dt{color:var(--fg);font-weight:600;margin-bottom:4px}
 footer dd{margin:0}
-footer a{color:inherit}
+footer .bar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-size:12px}
+footer .bar b{color:var(--fg);font-weight:600}
+@media (max-width:900px){footer dl{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:480px){footer dl{grid-template-columns:1fr}}
 @media (max-width:680px){
   main{padding-top:20px}
   .wrap{overflow-x:auto}
@@ -90,12 +95,12 @@ footer a{color:inherit}
 <noscript><p>TickerPulse needs JavaScript to show the table.</p></noscript>
 <footer>
   <dl>
-    <dt>Mentions</dt><dd>Posts and comments naming the stock across investing subreddits in the last 24 hours.</dd>
-    <dt>24h change</dt><dd>Mentions now minus mentions in the previous 24 hours. The percentage is shown only when the earlier count was 10 or more; below that it is noise. “—” means the earlier count isn't available.</dd>
-    <dt>Momentum</dt><dd>(now − before) ÷ √(now + before): the change measured against its normal randomness. Around ±1 is ordinary; +2 or more is a real spike.</dd>
-    <dt>Rank</dt><dd>▲/▼ shows movement since 24 hours ago. NEW means the stock wasn't ranked then.</dd>
+    <div><dt>Mentions</dt><dd>Posts and comments naming the stock across investing subreddits in the last 24 hours. Click a ticker to see them on Reddit.</dd></div>
+    <div><dt>24h change</dt><dd>Mentions now versus the previous 24 hours. <b>—</b> means the earlier count isn't available.</dd></div>
+    <div><dt>Momentum</dt><dd>How unusual the 24h change is, given how much the stock is normally discussed.</dd></div>
+    <div><dt>Rank</dt><dd><span class="up">▲</span> / <span class="down">▼</span> movement since 24 hours ago. <span class="new">NEW</span> means it wasn't ranked then.</dd></div>
   </dl>
-  <p>Data from <a href="https://apewisdom.io" rel="noopener">ApeWisdom</a>, refreshed every 5 minutes. Not financial advice.</p>
+  <div class="bar"><span><b>TickerPulse</b> · Reddit mentions, refreshed every 5 minutes</span><span>Mentions measure attention, not value. Not financial advice.</span></div>
 </footer>
 </main>
 <script id="data" type="application/json">__DATA__</script>
@@ -105,6 +110,9 @@ footer a{color:inherit}
 const C = { rank: 0, ticker: 1, name: 2, mentions: 3, upvotes: 4, prevRank: 5, prevMentions: 6, delta: 7, pct: 8, z: 9 };
 const FIRST_DIR = { rank: 1, ticker: 1, mentions: -1, delta: -1, upvotes: -1, z: -1 };
 const STALE_MS = 20 * 60e3;
+const SOLID_N = 10; // below this many mentions (now + before) the z-score approximation overstates moves
+// shortcut: hand-picked list of tickers that are everyday words; extend it when a false positive shows up
+const WORDS = new Set("A AI ALL AM ANY ARE BE BEST BIG BY CAN CASH CAT CEO DD DO EOD ET EV EVER FAST FOR FUN GAIN GO HAS HE HOLD HR IPO IT KEY LIFE LOVE LOW MOON NEXT NOW ON ONE OPEN OR OUT PM PLAY POST REAL RUN SO TRUE TV UP USA WELL YOLO".split(" "));
 const $ = (id) => document.getElementById(id);
 const nf = new Intl.NumberFormat("en-US");
 const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "") + nf.format(Math.abs(n));
@@ -137,10 +145,21 @@ function buildRow(r) {
   rank.append(mv);
 
   const a = document.createElement("a");
-  a.href = "https://apewisdom.io/stocks/" + encodeURIComponent(r[C.ticker]) + "/";
+  // Reddit's own search page, so no API key; limited to investing subs to cut noise on word-like tickers
+  a.href = "https://www.reddit.com/r/wallstreetbets+stocks+investing+StockMarket+options+pennystocks/search/?restrict_sr=1&sort=new&t=day&q=" + encodeURIComponent(r[C.ticker]);
   a.rel = "noopener";
   a.textContent = r[C.ticker];
-  cell(tr, "", "l tk").append(a);
+  const tk = cell(tr, "", "l tk");
+  tk.append(a);
+  const amb = WORDS.has(r[C.ticker]);
+  if (amb) {
+    const s = document.createElement("span");
+    s.className = "amb";
+    s.textContent = "?";
+    s.title = "Also a common word: this count may include mentions that aren't about the stock";
+    s.setAttribute("aria-label", s.title);
+    tk.append(s);
+  }
   cell(tr, r[C.name], "l nm opt").title = r[C.name];
   cell(tr, nf.format(r[C.mentions]));
 
@@ -157,7 +176,10 @@ function buildRow(r) {
   }
   cell(tr, nf.format(r[C.upvotes]), "opt");
   if (z === null) cell(tr, "—", "mute");
-  else cell(tr, (z > 0 ? "+" : z < 0 ? "−" : "") + Math.abs(z).toFixed(1), z >= 2 ? "up b" : z <= -2 ? "down b" : "mute");
+  else {
+    const solid = !amb && r[C.mentions] + r[C.prevMentions] >= SOLID_N;
+    cell(tr, (z > 0 ? "+" : z < 0 ? "−" : "") + Math.abs(z).toFixed(1), solid && z >= 2 ? "up b" : solid && z <= -2 ? "down b" : "mute");
+  }
   return tr;
 }
 
@@ -193,7 +215,7 @@ function render() {
     ? snap.rows.filter((r) => r[C.ticker].startsWith(needle) || (" " + r[C.name].toUpperCase()).includes(" " + needle))
     : snap.rows.slice()).sort(cmp);
   $("rows").replaceChildren(...rows.map((r) => trOf.get(r)));
-  $("empty").hidden = rows.length > 0;
+  $("empty").hidden = rows.length > 0 || !needle;
   for (const th of document.querySelectorAll("th[data-k]"))
     th.setAttribute("aria-sort", th.dataset.k === sort ? (dir > 0 ? "ascending" : "descending") : "none");
   meta();

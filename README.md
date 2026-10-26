@@ -21,7 +21,8 @@ page → polls /data.json every 2 min while visible (ETag → 304 when unchanged
 | Column | Definition |
 |---|---|
 | 24h change | `mentions − mentions_24h_ago`. The % is shown only when the earlier count is ≥ 10 (`MIN_PCT_BASE`). |
-| Momentum | `(now − before) / √(now + before)`, the z-score of the difference between two Poisson counts. |
+| Momentum | `(now − before) / √(now + before)`, the z-score of the difference between two Poisson counts. Highlighted only when `now + before ≥ 10` and the ticker isn't an everyday word. |
+| ? | ticker is also a common word (IT, NOW, HR, AI…), so its count can include unrelated text. Hand-picked list in `index.html` (`WORDS`). |
 | NEW | upstream `rank_24h_ago = 0` (the earlier count is treated as 0) |
 | — | ranked 24h ago but upstream gave no count: unknown, **not** new |
 
