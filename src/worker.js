@@ -45,7 +45,8 @@ export default {
     };
     if (pathname === '/data.json') {
       const etag = `"${snap.metadata.t}"`;
-      if (req.headers.get('if-none-match') === etag) return new Response(null, { status: 304, headers: { ...headers, etag } });
+      // Cloudflare weakens ETags on compressed responses, so the browser sends back W/"…".
+      if (req.headers.get('if-none-match')?.replace(/^W\//, '') === etag) return new Response(null, { status: 304, headers: { ...headers, etag } });
       return new Response(snap.value, { headers: { ...headers, etag, 'content-type': 'application/json; charset=utf-8' } });
     }
     // Function replacer: a string replacement would interpret "$&" etc. inside the data.
