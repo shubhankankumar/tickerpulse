@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TickerPulse · Most-mentioned stocks on Reddit</title>
-<meta name="description" content="The stocks Reddit is talking about right now: mentions, 24-hour change and momentum across investing subreddits, refreshed every 5 minutes.">
+<meta name="description" content="The stocks Reddit is talking about right now: mentions, 24-hour change and momentum across investing subreddits, refreshed every 15 minutes.">
 <meta property="og:title" content="TickerPulse · Most-mentioned stocks on Reddit">
-<meta property="og:description" content="Mentions, 24-hour change and momentum for every stock discussed on Reddit, refreshed every 5 minutes.">
+<meta property="og:description" content="Mentions, 24-hour change and momentum for every stock discussed on Reddit, refreshed every 15 minutes.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 9h3l2-6 4 10 2-4h3' fill='none' stroke='%2310b981' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
@@ -100,7 +100,7 @@ footer .bar b{color:var(--fg);font-weight:600}
     <div><dt>Momentum</dt><dd>How unusual the 24h change is, given how much the stock is normally discussed.</dd></div>
     <div><dt>Rank</dt><dd><span class="up">▲</span> / <span class="down">▼</span> movement since 24 hours ago. <span class="new">NEW</span> means it wasn't ranked then.</dd></div>
   </dl>
-  <div class="bar"><span><b>TickerPulse</b> · Reddit mentions, refreshed every 5 minutes</span><span>Mentions measure attention, not value. Not financial advice.</span></div>
+  <div class="bar"><span><b>TickerPulse</b> · Reddit mentions, refreshed every 15 minutes</span><span>Mentions measure attention, not value. Not financial advice.</span></div>
 </footer>
 </main>
 <script id="data" type="application/json">__DATA__</script>
@@ -109,7 +109,7 @@ footer .bar b{color:var(--fg);font-weight:600}
 // Row tuple layout, see src/data.js
 const C = { rank: 0, ticker: 1, name: 2, mentions: 3, upvotes: 4, prevRank: 5, prevMentions: 6, delta: 7, pct: 8, z: 9 };
 const FIRST_DIR = { rank: 1, ticker: 1, mentions: -1, delta: -1, upvotes: -1, z: -1 };
-const STALE_MS = 20 * 60e3;
+const STALE_MS = 35 * 60e3; // cron runs every 15 min: warn after ~2 missed runs
 const SOLID_N = 10; // below this many mentions (now + before) the z-score approximation overstates moves
 // shortcut: hand-picked list of tickers that are everyday words; extend it when a false positive shows up
 const WORDS = new Set("A AI ALL AM ANY ARE BE BEST BIG BY CAN CASH CAT CEO DD DO EOD ET EV EVER FAST FOR FUN GAIN GO HAS HE HOLD HR IPO IT KEY LIFE LOVE LOW MOON NEXT NOW ON ONE OPEN OR OUT PM PLAY POST REAL RUN SO TRUE TV UP USA WELL YOLO".split(" "));

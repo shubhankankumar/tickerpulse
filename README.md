@@ -6,7 +6,7 @@ One Cloudflare Worker, no framework, no build step. The whole page with all ~700
 ## How it works
 
 ```
-cron (every 5 min) → ApeWisdom API (all pages) → validate + derive → KV
+cron (every 15 min) → ApeWisdom API (all pages) → validate + derive → KV
 request → Worker reads KV → HTML with data inlined (one request, one paint)
 page → polls /data.json every 2 min while visible (ETag → 304 when unchanged)
 ```
