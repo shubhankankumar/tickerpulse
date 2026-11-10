@@ -7,6 +7,7 @@ const raw = (o) => ({ rank: 1, ticker: 'NVDA', name: 'NVIDIA', mentions: 10, upv
 test('decodeEntities handles escaped and raw ampersands', () => {
   assert.equal(decodeEntities('SPDR S&amp;P 500'), 'SPDR S&P 500');
   assert.equal(decodeEntities('AT&T'), 'AT&T');
+  assert.equal(decodeEntities('&constructor; &__proto__;'), '&constructor; &__proto__;');
   assert.equal(decodeEntities('Lowe&#39;s &#x26; Co &bogus;'), "Lowe's & Co &bogus;");
 });
 

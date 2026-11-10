@@ -10,7 +10,7 @@ const API = 'https://apewisdom.io/api/v1.0/filter/all-stocks/page/';
 const MAX_PAGES = 40; // Workers allow 50 subrequests per invocation
 export const MIN_PCT_BASE = 10;
 
-const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+const ENTITIES = { __proto__: null, amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
 
 // Upstream escapes some names (S&amp;P) and not others (AT&T); decode once.
 export function decodeEntities(s) {
