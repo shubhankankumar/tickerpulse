@@ -8,3 +8,7 @@ crons = ["*/15 * * * *"] # every run writes KV once; free plan allows 1,000 writ
 [[kv_namespaces]]
 binding = "SNAP"
 id = "c742459b82ad419fbc11fc48c8890b34" # from: npx wrangler kv namespace create SNAP
+
+# Workers Logs: keeps console output and errors searchable in the dashboard (free plan: 200,000 events/day; this uses ~200).
+[observability]
+enabled = true

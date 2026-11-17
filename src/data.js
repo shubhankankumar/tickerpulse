@@ -96,3 +96,12 @@ export async function fetchSnapshot(fetchFn = fetch, now = Date.now()) {
 
 // JSON inside <script> must not contain "</script>"; "<" only appears inside strings, where < is equivalent.
 export const embed = (json) => json.replace(/</g, '\\u003c');
+
+// CSP for the page: the inline <style> and executable <script> are allowed by their sha256, so 'unsafe-inline' isn't
+// needed and any injected markup can't run. The JSON <script id="data"> is never executed, so it needs no hash.
+const sha = async (s) => `'sha256-${btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))))}'`;
+export async function csp(html) {
+  const blocks = (tag) => Promise.all([...html.matchAll(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, 'g'))].map((m) => sha(m[1])));
+  const [scripts, styles] = await Promise.all([blocks('script'), blocks('style')]);
+  return `default-src 'none'; script-src ${scripts.join(' ') || "'none'"}; style-src ${styles.join(' ') || "'none'"}; connect-src 'self'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`;
+}

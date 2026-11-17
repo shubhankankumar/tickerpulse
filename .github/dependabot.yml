@@ -1,0 +1,21 @@
+# Dependabot: weekly update PRs, only for releases at least 14 days old (cooldown).
+# Security fixes ignore the cooldown and arrive as soon as GitHub publishes an advisory.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 14
+    open-pull-requests-limit: 5
+    groups:
+      all:
+        patterns: ["*"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 14
+    open-pull-requests-limit: 5
