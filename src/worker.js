@@ -1,5 +1,7 @@
 import page from './index.html';
-import { fetchSnapshot, embed } from './data.js';
+import { fetchSnapshot, embed, csp } from './data.js';
+
+let policy; // computed once per isolate from the page's inline blocks
 
 const KEY = 'snapshot';
 
@@ -20,7 +22,14 @@ async function load(env) {
 export default {
   async scheduled(_event, env) {
     // A failed run keeps the previous snapshot; the page shows a staleness warning if it persists.
-    await refresh(env);
+    // Most failures are transient (ApeWisdom hiccups, or ranks shifting between page fetches), so retry once.
+    try {
+      await refresh(env);
+    } catch (e) {
+      console.warn('refresh failed, retrying in 5 s:', e.message);
+      await new Promise((r) => setTimeout(r, 5000));
+      await refresh(env); // a second failure still shows up as an error in the dashboard
+    }
   },
 
   async fetch(req, env) {
@@ -41,7 +50,7 @@ export default {
       'x-content-type-options': 'nosniff',
       'referrer-policy': 'strict-origin-when-cross-origin',
       // Defense in depth: rows are rendered with textContent; this also blocks framing and any off-site loads.
-      'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      'content-security-policy': await (policy ??= csp(page)),
     };
     if (pathname === '/data.json') {
       const etag = `"${snap.metadata.t}"`;

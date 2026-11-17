@@ -69,3 +69,16 @@ test('embed cannot break out of the script tag', () => {
   assert.equal(embed('{"n":"</script><b>"}'), '{"n":"\\u003c/script>\\u003cb>"}');
   assert.deepEqual(JSON.parse(embed('{"n":"</script>"}')), { n: '</script>' });
 });
+
+test('csp allows exactly the page inline blocks by hash, never unsafe-inline', async () => {
+  const { csp } = await import('../src/data.js');
+  const { readFileSync } = await import('node:fs');
+  const { createHash } = await import('node:crypto');
+  const html = readFileSync(new URL('../src/index.html', import.meta.url), 'utf8');
+  const p = await csp(html);
+  const h = (s) => `'sha256-${createHash('sha256').update(s).digest('base64')}'`;
+  assert.ok(p.includes(`script-src ${h(html.match(/<script>([\s\S]*?)<\/script>/)[1])};`), p);
+  assert.ok(p.includes(`style-src ${h(html.match(/<style>([\s\S]*?)<\/style>/)[1])};`), p);
+  assert.doesNotMatch(p, /unsafe-inline/);
+  assert.equal(await csp('<p>none</p>'), await csp('<p>x</p>'), 'no blocks: nothing allowed');
+});
