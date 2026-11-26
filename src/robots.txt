@@ -1,0 +1,9 @@
+# Search engines may list this site; nothing else may crawl, scrape, archive, download it or use it for AI.
+# Google-Extended, Applebot-Extended and every AI or scraping bot fall under the last group.
+User-agent: Googlebot
+User-agent: Bingbot
+Content-Signal: search=yes, ai-input=no, ai-train=no
+Allow: /
+
+User-agent: *
+Disallow: /

@@ -1,4 +1,5 @@
 import page from './index.html';
+import robots from './robots.txt';
 import { fetchSnapshot, embed, csp } from './data.js';
 
 let policy; // computed once per isolate from the page's inline blocks
@@ -35,6 +36,7 @@ export default {
   async fetch(req, env) {
     const { pathname } = new URL(req.url);
     if (req.method !== 'GET' && req.method !== 'HEAD') return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, HEAD' } });
+    if (pathname === '/robots.txt') return new Response(robots, { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'public, max-age=86400' } });
     if (pathname !== '/' && pathname !== '/data.json') return new Response('Not found', { status: 404 });
 
     let snap;
